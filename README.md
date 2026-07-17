@@ -19,26 +19,38 @@ ARAS bekerja dengan membandingkan tiap laptop terhadap sebuah **alternatif optim
 
 **1. Bentuk matriks keputusan + Alternatif Optimal (A0)**
 
-$$X_{0j} = \max_i x_{ij} \quad \text{(benefit)} \qquad X_{0j} = \min_i x_{ij} \quad \text{(cost)}$$
+```math
+X_{0j} = \max_i x_{ij} \quad \text{(benefit)} \qquad X_{0j} = \min_i x_{ij} \quad \text{(cost)}
+```
 
 **2. Normalisasi matriks**
 
 Benefit:
-$$x_{ij}^{*} = \frac{x_{ij}}{\sum_{i=0}^{m} x_{ij}}$$
+```math
+x_{ij}^{*} = \frac{x_{ij}}{\sum_{i=0}^{m} x_{ij}}
+```
 
 Cost:
-$$x_{ij}^{*} = \frac{1/x_{ij}}{\sum_{i=0}^{m} (1/x_{ij})}$$
+```math
+x_{ij}^{*} = \frac{1/x_{ij}}{\sum_{i=0}^{m} (1/x_{ij})}
+```
 
 **3. Pembobotan matriks ternormalisasi**
-$$\hat{x}_{ij} = w_j \cdot x_{ij}^{*}$$
+```math
+\hat{x}_{ij} = w_j \cdot x_{ij}^{*}
+```
 
 **4. Nilai fungsi optimalitas (Sᵢ)**
-$$S_i = \sum_{j=1}^{n} \hat{x}_{ij}$$
+```math
+S_i = \sum_{j=1}^{n} \hat{x}_{ij}
+```
 
 **5. Derajat utilitas (Kᵢ) — dasar ranking**
-$$K_i = \frac{S_i}{S_0}$$
+```math
+K_i = \frac{S_i}{S_0}
+```
 
-$S_0$ adalah nilai $S_i$ dari alternatif optimal (A0). Laptop dengan $K_i$ terbesar = rekomendasi #1.
+`S_0` adalah nilai `S_i` dari alternatif optimal (A0). Laptop dengan `K_i` terbesar = rekomendasi #1.
 
 ## Cara Menjalankan
 
@@ -50,7 +62,7 @@ flutter pub get
 flutter run
 ```
 
-Build APK untuk submit tugas:
+Cara build APK:
 
 ```bash
 flutter build apk --release
