@@ -50,7 +50,7 @@ S_i = \sum_{j=1}^{n} \hat{x}_{ij}
 K_i = \frac{S_i}{S_0}
 ```
 
-`S_0` adalah nilai `S_i` dari alternatif optimal (A0). Laptop dengan `K_i` terbesar = rekomendasi #1.
+S₀ adalah nilai Sᵢ dari alternatif optimal (A0). Laptop dengan Kᵢ terbesar = rekomendasi #1.
 
 ## Cara Menjalankan
 
