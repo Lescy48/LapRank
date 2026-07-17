@@ -28,4 +28,21 @@ class Kriteria {
       tipe: tipe ?? this.tipe,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'nama': nama,
+        'bobot': bobot,
+        'tipe': tipe.name,
+      };
+
+  factory Kriteria.fromJson(Map<String, dynamic> json) => Kriteria(
+        id: json['id'] as String,
+        nama: json['nama'] as String,
+        bobot: (json['bobot'] as num).toDouble(),
+        tipe: TipeKriteria.values.firstWhere(
+          (e) => e.name == json['tipe'],
+          orElse: () => TipeKriteria.benefit,
+        ),
+      );
 }

@@ -3,6 +3,7 @@ import '../models/kriteria.dart';
 import '../models/laptop.dart';
 import '../theme/app_theme.dart';
 import '../widgets/gradient_header.dart';
+import '../widgets/topography_background.dart';
 
 class LaptopScreen extends StatefulWidget {
   final List<Laptop> daftarLaptop;
@@ -24,7 +25,9 @@ class _LaptopScreenState extends State<LaptopScreen> {
   void _bukaFormLaptop({Laptop? laptop}) {
     if (widget.daftarKriteria.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tambahkan kriteria dulu sebelum input laptop!')),
+        const SnackBar(content: Text('Tambahkan kriteria dulu sebelum input laptop!'),
+        duration: Duration(seconds: 3),
+        ),
       );
       return;
     }
@@ -38,7 +41,7 @@ class _LaptopScreenState extends State<LaptopScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.colors.surface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -60,34 +63,34 @@ class _LaptopScreenState extends State<LaptopScreen> {
                 children: [
                   Text(
                     laptop == null ? 'Tambah Laptop' : 'Edit Laptop',
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: context.colors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 20),
                   TextField(
                     controller: namaCtrl,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: context.colors.textPrimary),
                     decoration: const InputDecoration(labelText: 'Nama Laptop'),
                   ),
                   const SizedBox(height: 14),
                   TextField(
                     controller: merekCtrl,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: context.colors.textPrimary),
                     decoration: const InputDecoration(labelText: 'Merek (opsional)'),
                   ),
                   const SizedBox(height: 20),
-                  const Text('Nilai per Kriteria', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+                  Text('Nilai per Kriteria', style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   ...widget.daftarKriteria.map((k) => Padding(
                         padding: const EdgeInsets.only(bottom: 14),
                         child: TextField(
                           controller: nilaiCtrl[k.id],
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          style: const TextStyle(color: AppColors.textPrimary),
+                          style: TextStyle(color: context.colors.textPrimary),
                           decoration: InputDecoration(
                             labelText: k.nama,
                             suffixText: k.tipe == TipeKriteria.benefit ? 'Benefit' : 'Cost',
                             suffixStyle: TextStyle(
-                              color: k.tipe == TipeKriteria.benefit ? AppColors.success : AppColors.danger,
+                              color: k.tipe == TipeKriteria.benefit ? context.colors.success : context.colors.danger,
                               fontSize: 11,
                             ),
                           ),
@@ -101,7 +104,9 @@ class _LaptopScreenState extends State<LaptopScreen> {
                         final nama = namaCtrl.text.trim();
                         if (nama.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Nama laptop wajib diisi!')),
+                            const SnackBar(content: Text('Nama laptop wajib diisi!'),
+                            duration: Duration(seconds: 3),
+                            ),
                           );
                           return;
                         }
@@ -139,14 +144,37 @@ class _LaptopScreenState extends State<LaptopScreen> {
   }
 
   void _hapusLaptop(Laptop l) {
+    final index = widget.daftarLaptop.indexWhere((e) => e.id == l.id);
     setState(() => widget.daftarLaptop.removeWhere((e) => e.id == l.id));
     widget.onChanged();
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('"${l.nama}" dihapus'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() => widget.daftarLaptop.insert(
+                  index.clamp(0, widget.daftarLaptop.length),
+                  l,
+                ));
+            widget.onChanged();
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          const TopographyBackground(),
+          SafeArea(
         child: Column(
           children: [
             const GradientHeader(
@@ -156,21 +184,35 @@ class _LaptopScreenState extends State<LaptopScreen> {
             ),
             Expanded(
               child: widget.daftarLaptop.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('Belum ada data laptop.\nTekan + untuk menambah.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.textSecondary)),
+                          style: TextStyle(color: context.colors.textSecondary)),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
                       itemCount: widget.daftarLaptop.length,
                       itemBuilder: (ctx, i) {
                         final l = widget.daftarLaptop[i];
-                        return Container(
+                        return Dismissible(
+                          key: ValueKey(l.id),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (_) => _hapusLaptop(l),
+                          background: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            alignment: Alignment.centerRight,
+                            decoration: BoxDecoration(
+                              color: context.colors.danger,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.delete_rounded, color: Colors.white),
+                          ),
+                          child: Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: AppColors.surface,
+                            color: context.colors.surface,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
@@ -181,7 +223,7 @@ class _LaptopScreenState extends State<LaptopScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      gradient: AppColors.primaryGradient,
+                                      gradient: context.colors.primaryGradient,
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(Icons.laptop_rounded, color: Colors.white, size: 20),
@@ -191,19 +233,15 @@ class _LaptopScreenState extends State<LaptopScreen> {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text(l.nama, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
+                                        Text(l.nama, style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
                                         if (l.merek != null && l.merek!.isNotEmpty)
-                                          Text(l.merek!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                                          Text(l.merek!, style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
                                       ],
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.edit_rounded, color: AppColors.textSecondary, size: 20),
+                                    icon: Icon(Icons.edit_rounded, color: context.colors.textSecondary, size: 20),
                                     onPressed: () => _bukaFormLaptop(laptop: l),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 20),
-                                    onPressed: () => _hapusLaptop(l),
                                   ),
                                 ],
                               ),
@@ -215,17 +253,18 @@ class _LaptopScreenState extends State<LaptopScreen> {
                                   return Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                     decoration: BoxDecoration(
-                                      color: AppColors.surfaceLight,
+                                      color: context.colors.surfaceLight,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
                                       '${k.nama}: ${l.nilai[k.id]?.toStringAsFixed(1) ?? "-"}',
-                                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                                      style: TextStyle(color: context.colors.textSecondary, fontSize: 11),
                                     ),
                                   );
                                 }).toList(),
                               ),
                             ],
+                          ),
                           ),
                         );
                       },
@@ -233,6 +272,8 @@ class _LaptopScreenState extends State<LaptopScreen> {
             ),
           ],
         ),
+      ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _bukaFormLaptop(),

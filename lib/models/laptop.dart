@@ -24,4 +24,22 @@ class Laptop {
       nilai: nilai ?? Map<String, double>.from(this.nilai),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'nama': nama,
+        'merek': merek,
+        'nilai': nilai,
+      };
+
+  factory Laptop.fromJson(Map<String, dynamic> json) => Laptop(
+        id: json['id'] as String,
+        nama: json['nama'] as String,
+        merek: json['merek'] as String?,
+        nilai: Map<String, double>.from(
+          (json['nilai'] as Map).map(
+            (key, value) => MapEntry(key as String, (value as num).toDouble()),
+          ),
+        ),
+      );
 }

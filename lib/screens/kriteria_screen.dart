@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/kriteria.dart';
 import '../theme/app_theme.dart';
 import '../widgets/gradient_header.dart';
+import '../widgets/topography_background.dart';
 import '../logic/aras_calculator.dart';
 
 class KriteriaScreen extends StatefulWidget {
@@ -26,7 +27,7 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: context.colors.surface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -45,19 +46,19 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
                 children: [
                   Text(
                     kriteria == null ? 'Tambah Kriteria' : 'Edit Kriteria',
-                    style: const TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+                    style: TextStyle(color: context.colors.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 20),
                   TextField(
                     controller: namaCtrl,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: context.colors.textPrimary),
                     decoration: const InputDecoration(labelText: 'Nama Kriteria'),
                   ),
                   const SizedBox(height: 14),
                   TextField(
                     controller: bobotCtrl,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(color: AppColors.textPrimary),
+                    style: TextStyle(color: context.colors.textPrimary),
                     decoration: const InputDecoration(labelText: 'Bobot (%)'),
                   ),
                   const SizedBox(height: 14),
@@ -89,7 +90,9 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
                         final bobot = double.tryParse(bobotCtrl.text.trim()) ?? 0;
                         if (nama.isEmpty || bobot <= 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Nama dan bobot wajib diisi!')),
+                            const SnackBar(content: Text('Nama dan bobot wajib diisi!'),
+                            duration: Duration(seconds: 3),
+                            ),
                           );
                           return;
                         }
@@ -128,14 +131,14 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: aktif ? AppColors.primary : AppColors.surfaceLight,
+          color: aktif ? context.colors.primary : context.colors.surfaceLight,
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
           style: TextStyle(
-            color: aktif ? Colors.white : AppColors.textSecondary,
+            color: aktif ? Colors.white : context.colors.textSecondary,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -144,8 +147,27 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
   }
 
   void _hapusKriteria(Kriteria k) {
+    final index = widget.daftarKriteria.indexWhere((e) => e.id == k.id);
     setState(() => widget.daftarKriteria.removeWhere((e) => e.id == k.id));
     widget.onChanged();
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('"${k.nama}" dihapus'),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() => widget.daftarKriteria.insert(
+                  index.clamp(0, widget.daftarKriteria.length),
+                  k,
+                ));
+            widget.onChanged();
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -154,7 +176,11 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
     final valid = ARASCalculator.bobotValid(widget.daftarKriteria);
 
     return Scaffold(
-      body: SafeArea(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          const TopographyBackground(),
+          SafeArea(
         child: Column(
           children: [
             const GradientHeader(
@@ -167,14 +193,14 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: valid ? AppColors.success.withOpacity(0.12) : AppColors.danger.withOpacity(0.12),
+                  color: valid ? context.colors.success.withOpacity(0.12) : context.colors.danger.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       valid ? Icons.check_circle_rounded : Icons.error_rounded,
-                      color: valid ? AppColors.success : AppColors.danger,
+                      color: valid ? context.colors.success : context.colors.danger,
                       size: 20,
                     ),
                     const SizedBox(width: 10),
@@ -184,7 +210,7 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
                             ? 'Total bobot: ${total.toStringAsFixed(0)}% ✓'
                             : 'Total bobot: ${total.toStringAsFixed(0)}% (harus 100%)',
                         style: TextStyle(
-                          color: valid ? AppColors.success : AppColors.danger,
+                          color: valid ? context.colors.success : context.colors.danger,
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -196,60 +222,71 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
             ),
             Expanded(
               child: widget.daftarKriteria.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text('Belum ada kriteria.\nTekan + untuk menambah.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.textSecondary)),
+                          style: TextStyle(color: context.colors.textSecondary)),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
                       itemCount: widget.daftarKriteria.length,
                       itemBuilder: (ctx, i) {
                         final k = widget.daftarKriteria[i];
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
-                            borderRadius: BorderRadius.circular(16),
+                        return Dismissible(
+                          key: ValueKey(k.id),
+                          direction: DismissDirection.endToStart,
+                          onDismissed: (_) => _hapusKriteria(k),
+                          background: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            alignment: Alignment.centerRight,
+                            decoration: BoxDecoration(
+                              color: context.colors.danger,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.delete_rounded, color: Colors.white),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: (k.tipe == TipeKriteria.benefit ? AppColors.success : AppColors.danger)
-                                      .withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: context.colors.surface,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: (k.tipe == TipeKriteria.benefit ? context.colors.success : context.colors.danger)
+                                        .withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    k.tipe == TipeKriteria.benefit ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                                    color: k.tipe == TipeKriteria.benefit ? context.colors.success : context.colors.danger,
+                                  ),
                                 ),
-                                child: Icon(
-                                  k.tipe == TipeKriteria.benefit ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                                  color: k.tipe == TipeKriteria.benefit ? AppColors.success : AppColors.danger,
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(k.nama, style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        '${k.tipe == TipeKriteria.benefit ? "Benefit" : "Cost"} · Bobot ${k.bobot.toStringAsFixed(0)}%',
+                                        style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(k.nama, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                      '${k.tipe == TipeKriteria.benefit ? "Benefit" : "Cost"} · Bobot ${k.bobot.toStringAsFixed(0)}%',
-                                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                                    ),
-                                  ],
+                                IconButton(
+                                  icon: Icon(Icons.edit_rounded, color: context.colors.textSecondary, size: 20),
+                                  onPressed: () => _bukaFormKriteria(kriteria: k),
                                 ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit_rounded, color: AppColors.textSecondary, size: 20),
-                                onPressed: () => _bukaFormKriteria(kriteria: k),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete_outline_rounded, color: AppColors.danger, size: 20),
-                                onPressed: () => _hapusKriteria(k),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -257,6 +294,8 @@ class _KriteriaScreenState extends State<KriteriaScreen> {
             ),
           ],
         ),
+      ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _bukaFormKriteria(),

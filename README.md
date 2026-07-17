@@ -11,7 +11,12 @@ Aplikasi ini membandingkan beberapa laptop berdasarkan kriteria seperti harga, R
 - CRUD laptop beserta nilai tiap kriteria
 - Hitung ranking otomatis pakai ARAS
 - Validasi total bobot harus 100%
-- 5 data laptop dummy sudah tersedia dari awal
+- Detail Perhitungan
+- 5 data laptop dummy
+- Reset data ke data dummy
+- Export PDF & CSV/Excel
+- Toggle tema Light/Dark
+- Auto-save
 
 ## Metode ARAS
 
@@ -55,8 +60,8 @@ S₀ adalah nilai Sᵢ dari alternatif optimal (A0). Laptop dengan Kᵢ terbesar
 ## Cara Menjalankan
 
 ```bash
-flutter create aras_laptop
-cd aras_laptop
+flutter create laprank
+cd laprank
 # timpa folder lib/ dan pubspec.yaml dengan file dari repo ini
 flutter pub get
 flutter run

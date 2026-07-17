@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
 /// Header dengan gradient, dipakai di tiap screen biar konsisten & modern.
+/// Mendukung [trailing] opsional, misalnya tombol toggle tema.
 class GradientHeader extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
+  final Widget? trailing;
 
   const GradientHeader({
     super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
+    this.trailing,
   });
 
   @override
@@ -19,24 +22,15 @@ class GradientHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-      decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        gradient: context.colors.primaryGradient,
+        borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(28),
           bottomRight: Radius.circular(28),
         ),
       ),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: Colors.white, size: 28),
-          ),
-          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,6 +51,7 @@ class GradientHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing != null) trailing!,
         ],
       ),
     );
